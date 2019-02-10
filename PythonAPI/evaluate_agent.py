@@ -7,6 +7,7 @@ sys.path.append('{}/PythonAPI'.format(os.getcwd()))
 from challenge.server_manager import Track
 from challenge.scenario_setup import Route, ScenarioSetup
 
+
 def run_evaluation(args):
 
     # first we instantiate the Agent
@@ -15,7 +16,51 @@ def run_evaluation(args):
                                                          args.agent)
     foo = importlib.util.module_from_spec(module_spec)
     module_spec.loader.exec_module(foo)
-    agent_instance = getattr(foo, foo.__name__)()
+
+    # TODO I am hardcodding here some parameters. I dont know what is the best approach,
+    # TODO but i think if the agent receives some random set of parameters, that shouldnt hurt.
+    params = {
+        'checkpoint': '320000',
+        "model_type": 'coil-icra',
+        "model_configuration": {'perception':{
+                                    'res':{
+                                      'name': 'resnet34',
+                                      'num_classes': 512
+                                    }
+                                  },
+                                 'measurements':{
+                                    'fc': {
+                                        'neurons': [128, 128],
+                                        'dropouts': [0.0, 0.0]
+                                    }
+                                  },
+                                 'join':{
+                                    'fc':{
+                                      'neurons': [512],
+                                      'dropouts': [0.0]
+                                    }
+                                 },
+                                 'speed_branch':{
+                                    'fc':{
+                                        'neurons': [256, 256],
+                                        'dropouts': [0.0, 0.5]
+                                    }
+                                  },
+                                  'branches':{
+                                    'number_of_branches': 4,
+                                    'fc':{
+                                      'neurons': [256, 256],
+                                      'dropouts': [0.0, 0.5]
+                                    }
+                                 }
+                                },
+        'image_cut': [90, 485],
+        'speed_factor':12.0,
+        'size': [3, 88, 200]
+    }
+
+
+    agent_instance = getattr(foo, foo.__name__)(params)
 
     # configure simulation
     scenario_manager = ScenarioSetup(args, agent_instance)

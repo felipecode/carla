@@ -52,15 +52,16 @@ class AutonomousAgent():
 
     def __call__(self):
         input_data = self.data_provider.get_data()
-
         control = self.run_step(input_data)
         control.manual_gear_shift = False
-
         return control
 
     def all_sensors_ready(self):
         return self.data_provider.all_sensors_ready()
 
     def set_global_plan(self, topological_plan, waypoints_plan):
+
+        print (topological_plan)
+        print (waypoints_plan)
         self._topological_plan = topological_plan,
         self._waypoints_plan = waypoints_plan

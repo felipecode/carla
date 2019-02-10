@@ -53,7 +53,7 @@ class ScenarioSetup(object):
         self._start_time_scenario = 0
         self._timeout_scenario = 1000
         self._elapsed_time = 0
-        self._max_distance_target = 5.0 # meters
+        self._max_distance_target = 5.0  # meters
 
         self._load_routes()
 
@@ -267,7 +267,7 @@ class ScenarioSetup(object):
     def is_scenario_over(self):
         # scenario over for timeout
         self._elapsed_time = self._simulation_time - self._start_time_scenario
-        if  self._elapsed_time > self._timeout_scenario:
+        if self._elapsed_time > self._timeout_scenario:
             self._agent_state = TerminationState.FAIL_TIMEOUT
             return True
 

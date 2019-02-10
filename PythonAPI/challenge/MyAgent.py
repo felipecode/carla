@@ -8,6 +8,8 @@ class MyAgent(AutonomousAgent):
     def setup(self):
         pass
 
+
+
     def sensors_setup(self):
         """
         Define the sensor suite required by the agent

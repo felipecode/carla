@@ -42,6 +42,7 @@ class CallBack(object):
                           gnss_data.altitude], dtype=np.float32)
         self._data_provider.update_sensor(tag, array, gnss_data.frame_number)
 
+# TODO Make the data provider to give you some speed.
 
 class DataProvider(object):
     def __init__(self):
@@ -50,6 +51,7 @@ class DataProvider(object):
         self._timestamps = {}
 
     def register_sensor(self, tag, sensor):
+        print ("registered ", tag, sensor)
         if tag  in self._sensors_objects:
             raise ValueError("Duplicated sensor tag [{}]".format(tag))
 
@@ -58,7 +60,7 @@ class DataProvider(object):
         self._timestamps[tag] = -1
 
     def update_sensor(self, tag, data, timestamp):
-        if tag  not in self._sensors_objects:
+        if tag not in self._sensors_objects:
             raise ValueError("The sensor with tag [{}] has not been "
                              "created!".format(tag))
         self._data_buffers[tag] = data

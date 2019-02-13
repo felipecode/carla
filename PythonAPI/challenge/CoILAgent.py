@@ -30,7 +30,7 @@ class CoILAgent(AutonomousAgent):
 
     def __init__(self):
         AutonomousAgent.__init__(self)
-        params = {
+        self._params = {
             'checkpoint': '320000',
             "model_type": 'coil-icra',
             "model_configuration": {'perception': {
@@ -107,8 +107,8 @@ class CoILAgent(AutonomousAgent):
         # TODO, input speed should come on the input data
 
         #measurements, sensor_data, directions, target
-        print ("Input data")
-        print (input_data)
+        print ("Input data SPEED")
+        print (input_data['speed'])
 
         directions = 2.0  # function to get directions from the plan
 

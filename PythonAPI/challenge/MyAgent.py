@@ -50,6 +50,7 @@ class MyAgent(AutonomousAgent):
 
                     ['sensor.other.gnss', {'x': 0.7, 'y': -0.4, 'z': 1.60},
                      'GPS'],
+                    ['sensor.speedometer', {'reading_frequency':20}, 'speed']
                    ]
 
 

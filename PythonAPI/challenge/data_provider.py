@@ -1,14 +1,77 @@
+import time
 import copy
 import logging
 import numpy as np
-
 import carla
+from threading import Thread
+
+
+def threaded(fn):
+    def wrapper(*args, **kwargs):
+        thread = Thread(target=fn, args=args, kwargs=kwargs)
+        thread.setDaemon(True)
+        thread.start()
+
+        return thread
+    return wrapper
+
+
+class SpeedMeasurement(object):
+    def __init__(self, speed, frame_number):
+        self._speed = speed
+        self._frame_number = frame_number
+
+
+class Speedometer(object):
+
+    def __init__(self, vehicle, reading_frequency):
+        # The vehicle where the class reads the speed
+        self._vehicle = vehicle
+        # How often do you look at your speedometer in hz
+        self._reading_frequency = reading_frequency
+        self._callback = None
+        #  Counts the frames
+        self._frame_number = 0
+        self.produce_speed()
+
+    def _get_forward_speed(self):
+        """ Convert the vehicle transform directly to forward speed """
+
+        velocity = self._vehicle.get_velocity()
+        transform = self._vehicle.get_transform()
+        vel_np = np.array([velocity.x, velocity.y, velocity.z])
+        pitch = np.deg2rad(transform.rotation.pitch)
+        yaw = np.deg2rad(transform.rotation.yaw)
+        orientation = np.array(
+            [np.cos(pitch) * np.cos(yaw), np.cos(pitch) * np.sin(yaw), np.sin(pitch)])
+        speed = np.dot(vel_np, orientation)
+        return speed
+    # TODO ADD some destruction methods
+
+    @threaded
+    def produce_speed(self):
+        latest_speed_read = time.time()
+        while True:
+            if self._callback is not None:
+                capture = time.time()
+                if capture - latest_speed_read > (1/self._reading_frequency):
+                    self._callback(SpeedMeasurement(self._get_forward_speed(), self._frame_number))
+                    self._frame_number += 1
+                    latest_speed_read = time.time()
+
+    def listen(self, callback):
+        # Tell that this function receives what the producer does.
+        self._callback = callback
+
+
+
+
+
 
 class CallBack(object):
     def __init__(self, tag, sensor, data_provider):
         self._tag = tag
         self._data_provider = data_provider
-
         self._data_provider.register_sensor(tag, sensor)
 
     def __call__(self, data):
@@ -18,6 +81,8 @@ class CallBack(object):
             self._parse_lidar_cb(data, self._tag)
         elif isinstance(data, carla.GnssEvent):
             self._parse_gnss_cb(data, self._tag)
+        elif isinstance(data, Speedometer):
+            self._parse_speedometer(data, self._tag)
         else:
             logging.error('No callback method for this sensor.')
 
@@ -42,7 +107,9 @@ class CallBack(object):
                           gnss_data.altitude], dtype=np.float32)
         self._data_provider.update_sensor(tag, array, gnss_data.frame_number)
 
-# TODO Make the data provider to give you some speed.
+    def _parse_speedometer(self, speed_data, tag):
+        self._data_provider.update_sensor(tag, speed_data, speed_data.frame_number)
+
 
 class DataProvider(object):
     def __init__(self):

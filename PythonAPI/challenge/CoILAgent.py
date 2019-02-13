@@ -28,10 +28,47 @@ from challenge.autonomous_agent import AutonomousAgent
 
 class CoILAgent(AutonomousAgent):
 
-    def __init__(self, params):
+    def __init__(self):
         AutonomousAgent.__init__(self)
-        #town_name, carla_version = '0.84'
-
+        params = {
+            'checkpoint': '320000',
+            "model_type": 'coil-icra',
+            "model_configuration": {'perception': {
+                'res': {
+                    'name': 'resnet34',
+                    'num_classes': 512
+                }
+            },
+                'measurements': {
+                    'fc': {
+                        'neurons': [128, 128],
+                        'dropouts': [0.0, 0.0]
+                    }
+                },
+                'join': {
+                    'fc': {
+                        'neurons': [512],
+                        'dropouts': [0.0]
+                    }
+                },
+                'speed_branch': {
+                    'fc': {
+                        'neurons': [256, 256],
+                        'dropouts': [0.0, 0.5]
+                    }
+                },
+                'branches': {
+                    'number_of_branches': 4,
+                    'fc': {
+                        'neurons': [256, 256],
+                        'dropouts': [0.0, 0.5]
+                    }
+                }
+            },
+            'image_cut': [90, 485],
+            'speed_factor': 12.0,
+            'size': [3, 88, 200]
+        }
 
         self._checkpoint = torch.load(str(params['checkpoint']) + '.pth')
         # Set the carla version that is going to be used by the interface

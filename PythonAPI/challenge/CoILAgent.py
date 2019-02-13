@@ -113,11 +113,11 @@ class CoILAgent(AutonomousAgent):
         directions = 2.0  # function to get directions from the plan
 
         # Take the forward speed and normalize it for it to go from 0-1
-        norm_speed = input_data['speed'].data / self._params['speed_factor']#.SPEED_FACTOR
+        norm_speed = input_data['speed'][1] / self._params['speed_factor']#.SPEED_FACTOR
         norm_speed = torch.cuda.FloatTensor([norm_speed]).unsqueeze(0)
         directions_tensor = torch.cuda.LongTensor([directions])
         # Compute the forward pass processing the sensors got from CARLA.
-        model_outputs = self._model.forward_branch(self._process_sensors(input_data['rgb']), norm_speed,
+        model_outputs = self._model.forward_branch(self._process_sensors(input_data['rgb'][1]), norm_speed,
                                                    directions_tensor)
 
         steer, throttle, brake = self._process_model_outputs(model_outputs[0])

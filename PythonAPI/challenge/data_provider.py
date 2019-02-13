@@ -109,9 +109,6 @@ class CallBack(object):
 
     def _parse_speedometer(self, speed, tag):
 
-        print ("SPEED CALL BACK ", speed)
-        print ("CALLBACK DATA ", speed.data)
-
         self._data_provider.update_sensor(tag, speed.data, speed.frame_number)
 
 

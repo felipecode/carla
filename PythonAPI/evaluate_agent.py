@@ -16,12 +16,6 @@ def run_evaluation(args):
                                                          args.agent)
     foo = importlib.util.module_from_spec(module_spec)
     module_spec.loader.exec_module(foo)
-
-    # TODO I am hardcodding here some parameters. I dont know what is the best approach,
-    # TODO but i think if the agent receives some random set of parameters, that shouldnt hurt.
-
-
-
     agent_instance = getattr(foo, foo.__name__)()
 
     # configure simulation

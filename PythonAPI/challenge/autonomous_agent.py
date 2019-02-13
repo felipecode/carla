@@ -61,7 +61,5 @@ class AutonomousAgent():
 
     def set_global_plan(self, topological_plan, waypoints_plan):
 
-        print (topological_plan)
-        print (waypoints_plan)
         self._topological_plan = topological_plan,
         self._waypoints_plan = waypoints_plan

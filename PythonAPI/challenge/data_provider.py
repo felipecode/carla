@@ -45,6 +45,7 @@ class Speedometer(object):
         orientation = np.array(
             [np.cos(pitch) * np.cos(yaw), np.cos(pitch) * np.sin(yaw), np.sin(pitch)])
         speed = np.dot(vel_np, orientation)
+        print ("SPEED CALL BACK ", speed)
         return speed
     # TODO ADD some destruction methods
 

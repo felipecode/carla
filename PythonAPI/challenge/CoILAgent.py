@@ -70,12 +70,12 @@ class CoILAgent(AutonomousAgent):
             'size': [3, 88, 200]
         }
 
-        self._checkpoint = torch.load(str(params['checkpoint']) + '.pth')
+        self._checkpoint = torch.load(str(self._params['checkpoint']) + '.pth')
         # Set the carla version that is going to be used by the interface
         # We save the checkpoint for some interesting future use.
 
-        self._model = CoILModel(params["model_type"],
-                                params["model_configuration"])
+        self._model = CoILModel(self._params["model_type"],
+                                self._params["model_configuration"])
         self.first_iter = True
         # Load the model and prepare set it for evaluation
         self._model.load_state_dict(self._checkpoint['state_dict'])

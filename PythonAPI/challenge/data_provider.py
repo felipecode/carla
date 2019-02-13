@@ -17,9 +17,9 @@ def threaded(fn):
 
 
 class SpeedMeasurement(object):
-    def __init__(self, speed, frame_number):
-        self._speed = speed
-        self._frame_number = frame_number
+    def __init__(self, data, frame_number):
+        self.data = data
+        self.frame_number = frame_number
 
 
 class Speedometer(object):
@@ -107,8 +107,8 @@ class CallBack(object):
                           gnss_data.altitude], dtype=np.float32)
         self._data_provider.update_sensor(tag, array, gnss_data.frame_number)
 
-    def _parse_speedometer(self, speed_data, tag):
-        self._data_provider.update_sensor(tag, speed_data, speed_data.frame_number)
+    def _parse_speedometer(self, speed, tag):
+        self._data_provider.update_sensor(tag, speed.data, speed.frame_number)
 
 
 class DataProvider(object):

@@ -87,14 +87,18 @@ class CoILAgent(AutonomousAgent):
 
 
     def sensors_setup(self):
-
         sensors = [['sensor.camera.rgb',
                    {'x': 2.0, 'y': 0.0,
                     'z': 1.40, 'roll': 0.0,
                     'pitch': -15.0, 'yaw': 0.0,
                     'width': 800, 'height': 600,
                     'fov': 100},
-                    'rgb']]
+                    'rgb'],
+                   ['sensor.speedometer',
+                    {'reading_frequency': 20},
+                    'speed'
+                    ]
+                   ]
 
         return sensors
 

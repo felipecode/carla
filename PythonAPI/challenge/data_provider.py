@@ -81,7 +81,7 @@ class CallBack(object):
             self._parse_lidar_cb(data, self._tag)
         elif isinstance(data, carla.GnssEvent):
             self._parse_gnss_cb(data, self._tag)
-        elif isinstance(data, Speedometer):
+        elif isinstance(data, SpeedMeasurement):
             self._parse_speedometer(data, self._tag)
         else:
             logging.error('No callback method for this sensor.')

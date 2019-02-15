@@ -25,6 +25,10 @@ import carla
 
 from challenge.autonomous_agent import AutonomousAgent
 
+from agents.tools.misc import distance_vehicle
+from agents.navigation.local_planner import RoadOption
+
+
 
 class CoILAgent(AutonomousAgent):
 
@@ -85,6 +89,11 @@ class CoILAgent(AutonomousAgent):
         self.latest_image = None
         self.latest_image_tensor = None
 
+        # Number of expanded curve commands, both in front and in back
+
+        self._expand_command_front = 5
+        self._expand_command_back = 3
+
 
     def sensors_setup(self):
         sensors = [['sensor.camera.rgb',
@@ -97,7 +106,9 @@ class CoILAgent(AutonomousAgent):
                    ['sensor.speedometer',
                     {'reading_frequency': 20},
                     'speed'
-                    ]
+                    ],
+                   ['sensor.other.gnss', {'x': 0.7, 'y': -0.4, 'z': 1.60},
+                    'GPS']
                    ]
 
         return sensors
@@ -110,7 +121,7 @@ class CoILAgent(AutonomousAgent):
         print ("Input data SPEED")
         print (input_data['speed'])
 
-        directions = 2.0  # function to get directions from the plan
+        directions = self._get_current_direction(input_data['GPS'])
 
         # Take the forward speed and normalize it for it to go from 0-1
         norm_speed = input_data['speed'][1] / self._params['speed_factor']#.SPEED_FACTOR
@@ -132,6 +143,15 @@ class CoILAgent(AutonomousAgent):
         self.first_iter = False
 
         return control
+
+    def set_global_plan(self, topological_plan, waypoints_plan):
+        # We expand the commands before the curves.
+
+        self._expand_commands(topological_plan)
+
+        self._topological_plan = topological_plan
+        self._waypoints_plan = waypoints_plan
+
 
     def get_attentions(self, layers=None):
         """
@@ -185,6 +205,36 @@ class CoILAgent(AutonomousAgent):
 
         return image_input
 
+    def _get_current_direction(self, vehicle_transform):
+
+        # TODO: probably start by expanding the size of the turns.
+
+        # for the current position and orientation try to get the closest one from the waypoints
+        closest_id = 0
+        min_distance = 100000
+        for index in self._waypoints_plan:
+
+            waypoint = self._waypoints_plan[index]
+            # TODO maybe add if the agent is in a similar orientation.
+
+            computed_distance = distance_vehicle(waypoint, vehicle_transform)
+            if computed_distance < min_distance:
+                min_distance = computed_distance
+                closest_id = index
+
+        direction = self._topological_plan[closest_id]
+
+        if direction == RoadOption.LEFT:
+            direction = 3.0
+        elif direction == RoadOption.RIGHT:
+            direction = 4.0
+        elif direction == RoadOption.STRAIGHT:
+            direction = 5.0
+        else:
+            direction = 2.0
+
+        return direction
+
     def _process_model_outputs(self, outputs):
         """
          A bit of heuristics in the control, to eventually make car faster, for instance.
@@ -200,6 +250,54 @@ class CoILAgent(AutonomousAgent):
 
 
         return steer, throttle, brake
+
+    def _expand_commands(self, topological_plan):
+        """ The idea is to make the intersection indications to last longer"""
+
+        # O(2*N) algorithm , probably it is possible to do in O(N) with queues.
+
+        # Get the index where curves start and end
+        curves_start_end = []
+        inside = False
+        start = -1
+        current_curve = RoadOption.LANEFOLLOW
+        for index in range(len(topological_plan)):
+
+            command = topological_plan[index]
+
+            if command != RoadOption.LANEFOLLOW and not inside:
+                inside = True
+                start = index
+                current_curve = command
+
+            if command == RoadOption.LANEFOLLOW and inside:
+                inside = False
+                # End now is the index.
+                curves_start_end.append([start, index, current_curve])
+                if start == -1:
+                    raise ValueError("End of curve without start")
+
+                start = -1
+
+        for start_end_index_command in curves_start_end:
+            start_index = start_end_index_command[0]
+            end_index = start_end_index_command[0]
+            command  = start_end_index_command[0]
+
+            # Add the backwards curves ( Before the begginning)
+            for index in range(1 , self._expand_command_front+1):
+                changed_index = start_index- index
+                if changed_index > 0 :
+                    topological_plan[changed_index] = command
+
+
+            for index in range(0, self._expand_command_back):
+                changed_index = end_index + index
+                if changed_index < len(topological_plan) :
+                    topological_plan[changed_index] = command
+
+
+
 
 
     def _process_model_outputs_wp(self, outputs):

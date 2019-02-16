@@ -124,7 +124,7 @@ class CoILAgent(AutonomousAgent):
         directions = self._get_current_direction(input_data['GPS'])
 
         # Take the forward speed and normalize it for it to go from 0-1
-        norm_speed = input_data['speed'][1] / self._params['speed_factor']#.SPEED_FACTOR
+        norm_speed = input_data['speed'][1] / self._params['speed_factor'] #.SPEED_FACTOR
         norm_speed = torch.cuda.FloatTensor([norm_speed]).unsqueeze(0)
         directions_tensor = torch.cuda.LongTensor([directions])
         # Compute the forward pass processing the sensors got from CARLA.
